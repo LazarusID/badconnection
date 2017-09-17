@@ -1,7 +1,9 @@
 #include "server.h"
 
-int make_socket(uint16_t port) {
-    // Do some serious magic here
+#include <sys/socket.h>
 
-    return -1;
+int make_socket(uint16_t port) {
+    int fd;
+    fd = socket(PF_INET, SOCK_STREAM, 0);
+    return fd;
 }

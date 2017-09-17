@@ -19,3 +19,7 @@ all: unit_tests
 
 unit_tests: $(TEST_OBJ) $(SUT) testmain.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
+clean:
+	rm -f *.o
+	rm -f unit_tests

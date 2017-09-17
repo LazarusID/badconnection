@@ -1,20 +1,24 @@
 
-.PHONY: all clean mock test src
+.PHONY: all clean mock test src package
 
-all: mock test src
+VERSION=0.3
 
+all: src
+
+package: clean
+	zip -r badconnection-$(VERSION).zip . -x .git/\*
 
 clean:
 	make -C mock clean
 	make -C test clean
 	make -C src clean
-
+	rm -f *.zip
 
 mock:
 	make -C mock
 
-test:
+test: mock
 	make -C test
 
-src:
+src: test
 	make -C src

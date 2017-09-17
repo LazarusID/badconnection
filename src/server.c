@@ -22,5 +22,10 @@ int make_socket(uint16_t port) {
         exit(EXIT_FAILURE);
     }
 
+    if (listen(fd, 1) < 0) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+
     return fd;
 }

@@ -12,8 +12,10 @@
 
 void setup(void) {
     mock_init();
+    system_mock_init();
     socket_will_return(SOCKET_FD);
     bind_will_return(0);
+    listen_will_return(0);
 }
 
 void teardown(void) {}
@@ -53,6 +55,20 @@ START_TEST(makeSocket_whenBindFails_exitsWithError) {
 }
 END_TEST
 
+START_TEST(makeSocket_byDefault_listensWithBackLogOfOneConnection) {
+    make_socket(TEST_PORT);
+
+    ck_assert_int_eq(SOCKET_FD, listen_called_with_socket());
+    ck_assert_int_eq(1, listen_called_with_backlog());
+}
+END_TEST
+
+START_TEST(makeSocket_whenListenFails_exitsWithError) {
+    listen_will_return(-1);
+    make_socket(TEST_PORT);
+}
+END_TEST
+
 TCase *tcase_server(void) {
     TCase *tc;
 
@@ -65,6 +81,9 @@ TCase *tcase_server(void) {
     tcase_add_test(
         tc, makeSocket_byDefault_bindsSocketToSpecifiedPortOnAllInterfaces);
     tcase_add_exit_test(tc, makeSocket_whenBindFails_exitsWithError,
+                        EXIT_FAILURE);
+    tcase_add_test(tc, makeSocket_byDefault_listensWithBackLogOfOneConnection);
+    tcase_add_exit_test(tc, makeSocket_whenListenFails_exitsWithError,
                         EXIT_FAILURE);
 
     return tc;

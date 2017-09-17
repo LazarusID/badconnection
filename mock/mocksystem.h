@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <sys/socket.h>
 
+void system_mock_init(void);
+
 int socket(int domain, int type, int protocol);
 
 void socket_will_return(int socket_id);
@@ -21,5 +23,10 @@ uint32_t bind_called_with_address(void);
 socklen_t bind_called_with_len(void);
 
 void perror(const char *s);
+
+int listen(int fd, int backlog);
+void listen_will_return(int retval);
+int listen_called_with_socket(void);
+int listen_called_with_backlog(void);
 
 #endif

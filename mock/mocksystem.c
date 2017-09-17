@@ -49,6 +49,8 @@ int bind(int socket, const struct sockaddr *address, socklen_t address_len)
     bind_address = address;
     bind_len = address_len;
 
+    mock_register_call(bind);
+
     return bind_return;
 }
 

@@ -1,6 +1,7 @@
 #include "mocksystem.h"
 #include "server.h"
 #include <check.h>
+#include <netinet/in.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 
@@ -32,6 +33,17 @@ START_TEST(makeSocket_onError_ExitsWithError) {
 }
 END_TEST
 
+START_TEST(makeSocket_byDefault_bindsSocketToSpecifiedPortOnAllInterfaces) {
+    struct sockaddr_in *bound_add;
+    make_socket(TEST_PORT);
+
+    ck_assert_int_eq(SOCKET_FD, bind_called_with_socket());
+    ck_assert_int_eq(htons(TEST_PORT), bind_called_with_port());
+    ck_assert_int_eq(AF_INET, bind_called_with_family());
+    ck_assert_int_eq(INADDR_ANY, bind_called_with_address());
+}
+END_TEST
+
 TCase *tcase_server(void) {
     TCase *tc;
 
@@ -41,6 +53,8 @@ TCase *tcase_server(void) {
     tcase_add_test(tc, makeSocket_byDefault_createsInternetStreamSocket);
     tcase_add_test(tc, makeSocket_byDefault_returnsFdFromSocket);
     tcase_add_exit_test(tc, makeSocket_onError_ExitsWithError, EXIT_FAILURE);
+    tcase_add_test(
+        tc, makeSocket_byDefault_bindsSocketToSpecifiedPortOnAllInterfaces);
     return tc;
 }
 

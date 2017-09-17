@@ -2,6 +2,8 @@
 #include "mock.h"
 #include <netinet/in.h>
 #include <stdlib.h>
+#include <strings.h>
+#include <sys/select.h>
 
 int socket_domain = -1;
 int socket_type = -1;
@@ -19,6 +21,13 @@ int listen_return = -1;
 int listen_socket = -1;
 int listen_backlog = -1;
 
+unsigned int sleep_return = UINT32_MAX;
+
+int select_return = -1;
+fd_set select_read_fdset;
+fd_set select_write_fdset;
+fd_set select_error_fdset;
+
 void system_mock_init(void) {
     socket_domain = -1;
     socket_type = -1;
@@ -35,6 +44,12 @@ void system_mock_init(void) {
     listen_return = -1;
     listen_socket = -1;
     listen_backlog = -1;
+
+    sleep_return = 0;
+
+    FD_ZERO(&select_read_fdset);
+    FD_ZERO(&select_write_fdset);
+    FD_ZERO(&select_error_fdset);
 }
 
 int socket(int domain, int type, int protocol) {
@@ -94,3 +109,26 @@ int listen(int fd, int backlog) {
 void listen_will_return(int retval) { listen_return = retval; }
 int listen_called_with_socket(void) { return listen_socket; }
 int listen_called_with_backlog(void) { return listen_backlog; }
+
+unsigned int sleep(unsigned int seconds) {
+    mock_register_call_with(sleep, seconds);
+    return sleep_return;
+}
+
+int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds,
+           fd_set *restrict errorfds, struct timeval *restrict timeout) {
+
+    mock_register_call(select);
+    if (readfds)
+        FD_COPY(readfds, &select_read_fdset);
+    if (writefds)
+        FD_COPY(writefds, &select_write_fdset);
+    if (errorfds)
+        FD_COPY(errorfds, &select_error_fdset);
+    return select_return;
+}
+
+void select_will_return(int retval) { select_return = retval; }
+fd_set *select_called_with_readfds(void) { return &select_read_fdset; }
+fd_set *select_called_with_writefds(void) { return &select_write_fdset; }
+fd_set *select_called_with_errorfds(void) { return &select_error_fdset; }

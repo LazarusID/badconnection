@@ -2,7 +2,9 @@
 #define _MOCKSYSTEM_H_
 
 #include <stdint.h>
+#include <sys/select.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 void system_mock_init(void);
 
@@ -28,5 +30,14 @@ int listen(int fd, int backlog);
 void listen_will_return(int retval);
 int listen_called_with_socket(void);
 int listen_called_with_backlog(void);
+
+unsigned int sleep(unsigned int seconds);
+
+int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds,
+           fd_set *restrict errorfds, struct timeval *restrict timeout);
+void select_will_return(int retval);
+fd_set *select_called_with_readfds(void);
+fd_set *select_called_with_writefds(void);
+fd_set *select_called_with_errorfds(void);
 
 #endif

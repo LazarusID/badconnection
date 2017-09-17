@@ -5,4 +5,6 @@
 
 int make_socket(uint16_t port);
 
+void listener(int socket, void (*handler)(int));
+
 #endif

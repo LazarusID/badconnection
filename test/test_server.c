@@ -8,7 +8,10 @@
 #include <sys/socket.h>
 
 #define TEST_PORT 5150
-#define SOCKET_FD 27
+#define SOCKET_FD 7
+
+bool callback_called = false;
+int callback_called_with = -1;
 
 void setup(void) {
     mock_init();
@@ -16,9 +19,17 @@ void setup(void) {
     socket_will_return(SOCKET_FD);
     bind_will_return(0);
     listen_will_return(0);
+
+    callback_called = false;
+    callback_called_with = -1;
 }
 
 void teardown(void) {}
+
+void test_callback(int fd) {
+    callback_called = true;
+    callback_called_with = fd;
+}
 
 START_TEST(makeSocket_byDefault_createsInternetStreamSocket) {
     make_socket(TEST_PORT);
@@ -69,6 +80,19 @@ START_TEST(makeSocket_whenListenFails_exitsWithError) {
 }
 END_TEST
 
+//
+// Listener Tests
+//
+
+START_TEST(listener_byDefault_addedSocketToFdSet) {
+    fd_set *actual = NULL;
+    listener(SOCKET_FD, test_callback);
+
+    actual = select_called_with_readfds();
+    ck_assert_int_ne(0, FD_ISSET(SOCKET_FD, actual));
+}
+END_TEST
+
 TCase *tcase_server(void) {
     TCase *tc;
 
@@ -89,11 +113,22 @@ TCase *tcase_server(void) {
     return tc;
 }
 
+TCase *tcase_listener(void) {
+    TCase *tc;
+
+    tc = tcase_create("listener");
+    tcase_add_checked_fixture(tc, setup, teardown);
+    tcase_add_test(tc, listener_byDefault_addedSocketToFdSet);
+
+    return tc;
+}
+
 Suite *suite_server(void) {
     Suite *s;
 
     s = suite_create("server");
     suite_add_tcase(s, tcase_server());
+    suite_add_tcase(s, tcase_listener());
 
     return s;
 }

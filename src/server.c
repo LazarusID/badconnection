@@ -2,6 +2,7 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 
 int make_socket(uint16_t port) {
@@ -28,4 +29,15 @@ int make_socket(uint16_t port) {
     }
 
     return fd;
+}
+
+void listener(int sock, void (*handler)(int)) {
+
+    fd_set active_fd_set, read_fd_set;
+
+    FD_ZERO(&active_fd_set);
+    FD_SET(sock, &active_fd_set);
+
+    read_fd_set = active_fd_set;
+    select(FD_SETSIZE, &read_fd_set, 0, 0, 0);
 }

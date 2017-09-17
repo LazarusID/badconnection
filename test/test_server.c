@@ -1,7 +1,9 @@
+#include "mock.h"
 #include "mocksystem.h"
 #include "server.h"
 #include <check.h>
 #include <netinet/in.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 
@@ -9,13 +11,12 @@
 #define SOCKET_FD 27
 
 void setup(void) {
+    mock_init();
     socket_will_return(SOCKET_FD);
     bind_will_return(0);
 }
 
-void teardown(void) {
-    // Do Nothing
-}
+void teardown(void) {}
 
 START_TEST(makeSocket_byDefault_createsInternetStreamSocket) {
     make_socket(TEST_PORT);

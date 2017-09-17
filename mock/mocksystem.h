@@ -20,4 +20,6 @@ uint16_t bind_called_with_port(void);
 uint32_t bind_called_with_address(void);
 socklen_t bind_called_with_len(void);
 
+void perror(const char *s);
+
 #endif

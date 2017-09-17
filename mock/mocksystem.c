@@ -58,3 +58,5 @@ uint16_t bind_called_with_port(void) { return bind_port; }
 uint32_t bind_called_with_address(void) { return bind_address; }
 
 socklen_t bind_called_with_len(void) { return bind_len; }
+
+void perror(const char *s) { mock_register_call(perror); }

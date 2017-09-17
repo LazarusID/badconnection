@@ -8,7 +8,10 @@
 #define TEST_PORT 5150
 #define SOCKET_FD 27
 
-void setup(void) { socket_will_return(SOCKET_FD); }
+void setup(void) {
+    socket_will_return(SOCKET_FD);
+    bind_will_return(0);
+}
 
 void teardown(void) {
     // Do Nothing
@@ -34,7 +37,6 @@ START_TEST(makeSocket_onError_ExitsWithError) {
 END_TEST
 
 START_TEST(makeSocket_byDefault_bindsSocketToSpecifiedPortOnAllInterfaces) {
-    struct sockaddr_in *bound_add;
     make_socket(TEST_PORT);
 
     ck_assert_int_eq(SOCKET_FD, bind_called_with_socket());
@@ -44,10 +46,16 @@ START_TEST(makeSocket_byDefault_bindsSocketToSpecifiedPortOnAllInterfaces) {
 }
 END_TEST
 
+START_TEST(makeSocket_whenBindFails_exitsWithError) {
+    bind_will_return(-1);
+    make_socket(TEST_PORT);
+}
+END_TEST
+
 TCase *tcase_server(void) {
     TCase *tc;
 
-    tc = tcase_create("server");
+    tc = tcase_create("socket");
     tcase_add_checked_fixture(tc, setup, teardown);
 
     tcase_add_test(tc, makeSocket_byDefault_createsInternetStreamSocket);
@@ -55,6 +63,9 @@ TCase *tcase_server(void) {
     tcase_add_exit_test(tc, makeSocket_onError_ExitsWithError, EXIT_FAILURE);
     tcase_add_test(
         tc, makeSocket_byDefault_bindsSocketToSpecifiedPortOnAllInterfaces);
+    tcase_add_exit_test(tc, makeSocket_whenBindFails_exitsWithError,
+                        EXIT_FAILURE);
+
     return tc;
 }
 

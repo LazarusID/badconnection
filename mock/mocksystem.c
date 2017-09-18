@@ -1,5 +1,6 @@
 #include "mocksystem.h"
 #include "mock.h"
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -28,6 +29,11 @@ fd_set select_read_fdset;
 fd_set select_write_fdset;
 fd_set select_error_fdset;
 
+int accept_return;
+const char *accept_address;
+uint16_t accept_port;
+int accept_fd;
+
 void system_mock_init(void) {
     socket_domain = -1;
     socket_type = -1;
@@ -50,6 +56,11 @@ void system_mock_init(void) {
     FD_ZERO(&select_read_fdset);
     FD_ZERO(&select_write_fdset);
     FD_ZERO(&select_error_fdset);
+
+    int accept_return = -1;
+    const char *accept_address = NULL;
+    uint16_t accept_port = 0;
+    int accept_fd = -1;
 }
 
 int socket(int domain, int type, int protocol) {
@@ -132,3 +143,21 @@ void select_will_return(int retval) { select_return = retval; }
 fd_set *select_called_with_readfds(void) { return &select_read_fdset; }
 fd_set *select_called_with_writefds(void) { return &select_write_fdset; }
 fd_set *select_called_with_errorfds(void) { return &select_error_fdset; }
+
+int accept(int socket, struct sockaddr *restrict address,
+           socklen_t *restrict address_len) {
+
+    accept_fd = socket;
+    if (accept_address && address) {
+        struct sockaddr_in *client = (struct sockaddr_in *)address;
+        client->sin_addr.s_addr = inet_addr(accept_address);
+        client->sin_port = htons(accept_port);
+    }
+
+    return accept_return;
+}
+
+void accept_will_return(int retval) { accept_return = retval; }
+void accept_will_come_from_address(const char *ip) { accept_address = ip; }
+void accept_will_come_from_port(uint16_t port) { accept_port = port; }
+int accept_called_with_socket(void) { return accept_fd; }

@@ -40,4 +40,11 @@ fd_set *select_called_with_readfds(void);
 fd_set *select_called_with_writefds(void);
 fd_set *select_called_with_errorfds(void);
 
+int accept(int socket, struct sockaddr *restrict address,
+           socklen_t *restrict address_len);
+void accept_will_return(int retval);
+void accept_will_come_from_address(const char *ip);
+void accept_will_come_from_port(uint16_t);
+int accept_called_with_socket(void);
+
 #endif

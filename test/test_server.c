@@ -19,6 +19,7 @@ void setup(void) {
     socket_will_return(SOCKET_FD);
     bind_will_return(0);
     listen_will_return(0);
+    select_will_return(0);
 
     callback_called = false;
     callback_called_with = -1;
@@ -93,6 +94,12 @@ START_TEST(listener_byDefault_addedSocketToFdSet) {
 }
 END_TEST
 
+START_TEST(listener_whenSelectFails_exitsWithError) {
+    select_will_return(-1);
+    listener(SOCKET_FD, test_callback);
+}
+END_TEST
+
 TCase *tcase_server(void) {
     TCase *tc;
 
@@ -119,6 +126,8 @@ TCase *tcase_listener(void) {
     tc = tcase_create("listener");
     tcase_add_checked_fixture(tc, setup, teardown);
     tcase_add_test(tc, listener_byDefault_addedSocketToFdSet);
+    tcase_add_exit_test(tc, listener_whenSelectFails_exitsWithError,
+                        EXIT_FAILURE);
 
     return tc;
 }

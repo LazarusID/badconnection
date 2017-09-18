@@ -39,5 +39,8 @@ void listener(int sock, void (*handler)(int)) {
     FD_SET(sock, &active_fd_set);
 
     read_fd_set = active_fd_set;
-    select(FD_SETSIZE, &read_fd_set, 0, 0, 0);
+    if (select(FD_SETSIZE, &read_fd_set, 0, 0, 0)) {
+        perror("select");
+        exit(EXIT_FAILURE);
+    }
 }

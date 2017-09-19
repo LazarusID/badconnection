@@ -114,6 +114,14 @@ START_TEST(listener_byDefault_onlyOurSocketIsActive) {
 }
 END_TEST
 
+START_TEST(listener_byDefault_callsAcceptOnSetFds) {
+    int expected = SOCKET_FD + 1;
+    select_will_set_readfd(1, expected);
+    listener(SOCKET_FD, test_callback);
+    ck_assert_int_eq(expected, accept_called_with_socket());
+}
+END_TEST
+
 TCase *tcase_server(void) {
     TCase *tc;
 
@@ -143,6 +151,7 @@ TCase *tcase_listener(void) {
     tcase_add_exit_test(tc, listener_whenSelectFails_exitsWithError,
                         EXIT_FAILURE);
     tcase_add_test(tc, listener_byDefault_onlyOurSocketIsActive);
+    tcase_add_test(tc, listener_byDefault_callsAcceptOnSetFds);
 
     return tc;
 }

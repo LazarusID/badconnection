@@ -2,9 +2,12 @@
 #include "mock.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <strings.h>
 #include <sys/select.h>
+
+#define TOSET_MAX 10
 
 int socket_domain = -1;
 int socket_type = -1;
@@ -29,12 +32,17 @@ fd_set select_read_fdset;
 fd_set select_write_fdset;
 fd_set select_error_fdset;
 
+unsigned int TOSET_IDX;
+unsigned int select_read_to_set[TOSET_MAX];
+
 int accept_return;
 const char *accept_address;
 uint16_t accept_port;
 int accept_fd;
 
 void system_mock_init(void) {
+    int i;
+
     socket_domain = -1;
     socket_type = -1;
     socket_protocol = -1;
@@ -56,6 +64,11 @@ void system_mock_init(void) {
     FD_ZERO(&select_read_fdset);
     FD_ZERO(&select_write_fdset);
     FD_ZERO(&select_error_fdset);
+
+    TOSET_IDX = 0;
+    for (i = 0; i < TOSET_MAX; ++i) {
+        select_read_to_set[i] = 0;
+    }
 
     int accept_return = -1;
     const char *accept_address = NULL;
@@ -130,8 +143,16 @@ int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds,
            fd_set *restrict errorfds, struct timeval *restrict timeout) {
 
     mock_register_call(select);
-    if (readfds)
+    if (readfds) {
+        int idx;
         FD_COPY(readfds, &select_read_fdset);
+        if (TOSET_IDX > 0) {
+            FD_ZERO(readfds);
+            for (idx = 0; idx < TOSET_IDX; ++idx) {
+                FD_SET(select_read_to_set[idx], readfds);
+            }
+        }
+    }
     if (writefds)
         FD_COPY(writefds, &select_write_fdset);
     if (errorfds)
@@ -140,6 +161,18 @@ int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds,
 }
 
 void select_will_return(int retval) { select_return = retval; }
+void select_will_set_readfd(int n, ...) {
+    va_list valist;
+    int i;
+
+    va_start(valist, n);
+    for (i = 0; i < TOSET_MAX && i < n; ++i) {
+        select_read_to_set[i] = va_arg(valist, unsigned int);
+    }
+    va_end(valist);
+    TOSET_IDX = n;
+}
+
 fd_set *select_called_with_readfds(void) { return &select_read_fdset; }
 fd_set *select_called_with_writefds(void) { return &select_write_fdset; }
 fd_set *select_called_with_errorfds(void) { return &select_error_fdset; }

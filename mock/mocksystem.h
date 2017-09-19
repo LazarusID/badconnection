@@ -36,6 +36,7 @@ unsigned int sleep(unsigned int seconds);
 int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds,
            fd_set *restrict errorfds, struct timeval *restrict timeout);
 void select_will_return(int retval);
+void select_will_set_readfd(int n, ...);
 fd_set *select_called_with_readfds(void);
 fd_set *select_called_with_writefds(void);
 fd_set *select_called_with_errorfds(void);

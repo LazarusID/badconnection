@@ -36,19 +36,22 @@ void listener(int sock, void (*handler)(int)) {
     struct sockaddr_in client;
     socklen_t client_len;
 
-    fd_set active_fd_set, read_fd_set;
+    fd_set read_fd_set;
 
-    FD_ZERO(&active_fd_set);
-    FD_SET(sock, &active_fd_set);
+    FD_ZERO(&read_fd_set);
+    FD_SET(sock, &read_fd_set);
 
-    read_fd_set = active_fd_set;
-    if (select(FD_SETSIZE, &read_fd_set, 0, 0, 0)) {
-        perror("select");
-        exit(EXIT_FAILURE);
-    }
-    for (int i = 0; i < FD_SETSIZE; ++i) {
-        if (FD_ISSET(i, &read_fd_set)) {
-            accept(i, (struct sockaddr *)&client, &client_len);
+    while (1) {
+        if (select(FD_SETSIZE, &read_fd_set, 0, 0, 0)) {
+            perror("select");
+            exit(EXIT_FAILURE);
+        }
+        for (int i = 0; i < FD_SETSIZE; ++i) {
+            if (FD_ISSET(i, &read_fd_set)) {
+                int newfd;
+                newfd = accept(i, (struct sockaddr *)&client, &client_len);
+                handler(newfd);
+            }
         }
     }
 }

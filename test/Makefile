@@ -9,7 +9,7 @@ MOCK_LIB=-L../mock -lmocksystem
 CHECK_FLAGS = `pkg-config --cflags check`
 CHECK_LIBS = `pkg-config --libs check`
 
-LIBS=$(MOCK_LIB) $(CHECK_LIBS)
+LIBS=$(MOCK_LIB) $(CHECK_LIBS) -g
 CFLAGS=$(CHECK_FLAGS) -I../src -I../mock
 
 SUT=server.o

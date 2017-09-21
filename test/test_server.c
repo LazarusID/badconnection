@@ -87,7 +87,9 @@ END_TEST
 
 START_TEST(listener_byDefault_addedSocketToFdSet) {
     fd_set *actual = NULL;
-    listener(SOCKET_FD, test_callback);
+    fd_set read_set;
+    FD_SET(SOCKET_FD, &read_set);
+    loop(&read_set, test_callback);
 
     actual = select_called_with_readfds();
     ck_assert_int_ne(0, FD_ISSET(SOCKET_FD, actual));
@@ -96,28 +98,18 @@ END_TEST
 
 START_TEST(listener_whenSelectFails_exitsWithError) {
     select_will_return(-1);
-    listener(SOCKET_FD, test_callback);
-}
-END_TEST
-
-START_TEST(listener_byDefault_onlyOurSocketIsActive) {
-    int i;
-    fd_set *actual = NULL;
-    listener(SOCKET_FD, test_callback);
-
-    actual = select_called_with_readfds();
-    for (i = 0; i < FD_SETSIZE; ++i) {
-        if (SOCKET_FD != i) {
-            ck_assert_int_eq(0, FD_ISSET(i, actual));
-        }
-    }
+    fd_set read_set;
+    FD_SET(SOCKET_FD, &read_set);
+    loop(&read_set, test_callback);
 }
 END_TEST
 
 START_TEST(listener_byDefault_callsAcceptOnSetFds) {
     int expected = SOCKET_FD + 1;
     select_will_set_readfd(1, expected);
-    listener(SOCKET_FD, test_callback);
+    fd_set read_set;
+    FD_SET(SOCKET_FD, &read_set);
+    loop(&read_set, test_callback);
     ck_assert_int_eq(expected, accept_called_with_socket());
 }
 END_TEST
@@ -125,7 +117,9 @@ END_TEST
 START_TEST(listener_byDefault_callsCallbackWithAcceptFd) {
     int expected = SOCKET_FD - 1;
     accept_will_return(expected);
-    listener(SOCKET_FD, test_callback);
+    fd_set read_set;
+    FD_SET(SOCKET_FD, &read_set);
+    loop(&read_set, test_callback);
     ck_assert_int_eq(expected, callback_called_with);
 }
 END_TEST
@@ -158,7 +152,6 @@ TCase *tcase_listener(void) {
     tcase_add_test(tc, listener_byDefault_addedSocketToFdSet);
     tcase_add_exit_test(tc, listener_whenSelectFails_exitsWithError,
                         EXIT_FAILURE);
-    tcase_add_test(tc, listener_byDefault_onlyOurSocketIsActive);
     tcase_add_test(tc, listener_byDefault_callsAcceptOnSetFds);
     tcase_add_test(tc, listener_byDefault_callsCallbackWithAcceptFd);
 

@@ -33,25 +33,29 @@ int make_socket(uint16_t port) {
 
 void listener(int sock, void (*handler)(int)) {
 
-    struct sockaddr_in client;
-    socklen_t client_len;
-
     fd_set read_fd_set;
 
     FD_ZERO(&read_fd_set);
     FD_SET(sock, &read_fd_set);
 
     while (1) {
-        if (select(FD_SETSIZE, &read_fd_set, 0, 0, 0)) {
-            perror("select");
-            exit(EXIT_FAILURE);
-        }
-        for (int i = 0; i < FD_SETSIZE; ++i) {
-            if (FD_ISSET(i, &read_fd_set)) {
-                int newfd;
-                newfd = accept(i, (struct sockaddr *)&client, &client_len);
-                handler(newfd);
-            }
+        loop(&read_fd_set, handler);
+    }
+}
+
+void loop(fd_set *read_fd_set, void (*handler)(int)) {
+    struct sockaddr_in client;
+    socklen_t client_len;
+
+    if (select(FD_SETSIZE, read_fd_set, 0, 0, 0)) {
+        perror("select");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < FD_SETSIZE; ++i) {
+        if (FD_ISSET(i, read_fd_set)) {
+            int newfd;
+            newfd = accept(i, (struct sockaddr *)&client, &client_len);
+            handler(newfd);
         }
     }
 }

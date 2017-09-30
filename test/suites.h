@@ -4,5 +4,6 @@
 #include <check.h>
 
 Suite *suite_server(void);
+Suite *suite_handler(void);
 
 #endif

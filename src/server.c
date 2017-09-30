@@ -47,7 +47,7 @@ void loop(fd_set *read_fd_set, void (*handler)(int)) {
     struct sockaddr_in client;
     socklen_t client_len;
 
-    if (select(FD_SETSIZE, read_fd_set, 0, 0, 0)) {
+    if (select(FD_SETSIZE, read_fd_set, 0, 0, 0) == -1) {
         perror("select");
         exit(EXIT_FAILURE);
     }

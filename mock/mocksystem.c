@@ -40,6 +40,8 @@ const char *accept_address;
 uint16_t accept_port;
 int accept_fd;
 
+int close_return;
+
 void system_mock_init(void) {
     int i;
 
@@ -74,6 +76,8 @@ void system_mock_init(void) {
     const char *accept_address = NULL;
     uint16_t accept_port = 0;
     int accept_fd = -1;
+
+    close_return = -1;
 }
 
 int socket(int domain, int type, int protocol) {
@@ -194,3 +198,10 @@ void accept_will_return(int retval) { accept_return = retval; }
 void accept_will_come_from_address(const char *ip) { accept_address = ip; }
 void accept_will_come_from_port(uint16_t port) { accept_port = port; }
 int accept_called_with_socket(void) { return accept_fd; }
+
+int close(int fd) {
+    mock_register_call_with(close, fd);
+    return close_return;
+}
+
+void close_will_return(int retval) { close_return = retval; }

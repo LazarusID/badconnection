@@ -12,7 +12,7 @@ CHECK_LIBS = `pkg-config --libs check`
 LIBS=$(MOCK_LIB) $(CHECK_LIBS) -g
 CFLAGS=$(CHECK_FLAGS) -I../src -I../mock
 
-SUT=server.o
+SUT=server.o brokenpipe.o
 
 all: unit_tests
 	./unit_tests

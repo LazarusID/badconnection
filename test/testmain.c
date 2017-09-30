@@ -8,6 +8,7 @@ int main(int argc, char **argv) {
     int number_fails;
 
     runner = srunner_create(suite_server());
+    srunner_add_suite(runner, suite_handler());
 
     if (argc > 1 && strcmp(argv[1], "--nofork") == 0) {
         srunner_set_fork_status(runner, CK_NOFORK);

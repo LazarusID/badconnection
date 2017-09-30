@@ -48,4 +48,7 @@ void accept_will_come_from_address(const char *ip);
 void accept_will_come_from_port(uint16_t);
 int accept_called_with_socket(void);
 
+int close(int fd);
+void close_will_return(int retval);
+
 #endif

@@ -19,7 +19,7 @@ void setup(void) {
     socket_will_return(SOCKET_FD);
     bind_will_return(0);
     listen_will_return(0);
-    select_will_return(0);
+    select_will_return(1);
 
     callback_called = false;
     callback_called_with = -1;

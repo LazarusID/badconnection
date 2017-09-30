@@ -1,7 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "brokenpipe.h"
+#include "server.h"
+
 int main(int argc, char **argv) {
-    fputs("NOT IMPLEMENTED\n", stderr);
+
+    int sock = make_socket(7777);
+    listener(sock, broken_pipe);
+
     return EXIT_FAILURE;
 }
